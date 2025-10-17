@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, List, Optional
@@ -75,6 +76,27 @@ def summarize(events: Iterable[FestivalEvent]) -> dict:
     }
 
 
+def event_as_dict(event: FestivalEvent) -> dict:
+    return {
+        "name": event.name,
+        "cost": event.cost,
+        "revenue": event.revenue,
+        "attendance": event.attendance,
+        "roi": event.roi,
+        "profit": event.profit,
+    }
+
+
+def export_report(path: Path, summary: dict, top_events: Iterable[FestivalEvent]) -> None:
+    payload = {
+        "summary": summary,
+        "top_events": [event_as_dict(event) for event in top_events],
+    }
+    if path.parent and not path.parent.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
 def sample_events() -> List[FestivalEvent]:
     # Sample data helps users validate the workflow without providing their own dataset.
     return [
@@ -109,6 +131,11 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         action="store_true",
         help="Only show aggregate metrics, omit the top events breakdown.",
     )
+    parser.add_argument(
+        "--export-json",
+        type=Path,
+        help="Export the summary and ranked events to this JSON file.",
+    )
     return parser.parse_args(argv)
 
 
@@ -124,6 +151,14 @@ def main(argv: Optional[List[str]] = None) -> None:
     if args.min_attendance > 0:
         events = [event for event in events if event.attendance >= args.min_attendance]
     summary = summarize(events)
+    top_count = max(0, min(args.top, len(events)))
+    top_events: List[FestivalEvent] = []
+    if top_count:
+        top_events = sorted(events, key=lambda event: event.roi, reverse=True)[:top_count]
+    if args.summary_only:
+        top_events = []
+    if args.export_json:
+        export_report(args.export_json, summary, top_events)
     print("Festival ROI Summary")
     print("-------------------")
     print(f"Events analysed : {summary['events']}")
@@ -132,18 +167,15 @@ def main(argv: Optional[List[str]] = None) -> None:
     print(f"Total Profit    : {format_currency(summary['total_profit'])}")
     print(f"Total Attendance: {summary['total_attendance']:,}")
     print()
-    if args.summary_only:
+    if args.summary_only or not top_events:
         return
-    count = max(0, min(args.top, len(events)))
-    if count:
-        by_roi = sorted(events, key=lambda event: event.roi, reverse=True)[:count]
-        print(f"Top {count} Events by ROI")
-        for event in by_roi:
-            print(
-                f"- {event.name}: ROI {event.roi:.2%}, "
-                f"Profit {format_currency(event.profit)}, "
-                f"Attendance {event.attendance:,}"
-            )
+    print(f"Top {len(top_events)} Events by ROI")
+    for event in top_events:
+        print(
+            f"- {event.name}: ROI {event.roi:.2%}, "
+            f"Profit {format_currency(event.profit)}, "
+            f"Attendance {event.attendance:,}"
+        )
 
 
 if __name__ == "__main__":
