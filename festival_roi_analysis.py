@@ -104,6 +104,11 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         default=0,
         help="Ignore events with attendance below this threshold.",
     )
+    parser.add_argument(
+        "--summary-only",
+        action="store_true",
+        help="Only show aggregate metrics, omit the top events breakdown.",
+    )
     return parser.parse_args(argv)
 
 
@@ -127,6 +132,8 @@ def main(argv: Optional[List[str]] = None) -> None:
     print(f"Total Profit    : {format_currency(summary['total_profit'])}")
     print(f"Total Attendance: {summary['total_attendance']:,}")
     print()
+    if args.summary_only:
+        return
     count = max(0, min(args.top, len(events)))
     if count:
         by_roi = sorted(events, key=lambda event: event.roi, reverse=True)[:count]
