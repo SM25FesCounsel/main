@@ -116,8 +116,10 @@ def export_report(
     bottom_events: Iterable[FestivalEvent],
     underperformers: Iterable[FestivalEvent],
     roi_target: Optional[float],
+    title: str,
 ) -> None:
     payload = {
+        "title": title,
         "summary": summary,
         "ranking_metric": metric,
         "top_events": [event_as_dict(event) for event in top_events],
@@ -189,6 +191,11 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         help="Currency symbol or prefix used when printing monetary values.",
     )
     parser.add_argument(
+        "--report-title",
+        default="Festival ROI Summary",
+        help="Custom title for the printed report header.",
+    )
+    parser.add_argument(
         "--roi-target",
         type=float,
         help="ROI threshold (0.25 for 25%%) used to flag underperforming events.",
@@ -204,6 +211,7 @@ def format_currency(value: float, symbol: str) -> str:
 def main(argv: Optional[List[str]] = None) -> None:
     args = parse_args(argv)
     currency = args.currency
+    title = args.report_title
     events = sample_events()
     if args.input:
         events = load_events(args.input)
@@ -240,8 +248,9 @@ def main(argv: Optional[List[str]] = None) -> None:
             bottom_events,
             underperformers,
             args.roi_target,
+            title,
         )
-    print("Festival ROI Summary")
+    print(title)
     print("-------------------")
     print(f"Events analysed : {summary['events']}")
     print(f"Avg ROI         : {summary['avg_roi']:.2%}")
