@@ -28,6 +28,12 @@ class FestivalEvent:
     def profit(self) -> float:
         return self.revenue - self.cost
 
+    @property
+    def cost_per_attendee(self) -> float:
+        if self.attendance == 0:
+            return 0.0
+        return self.cost / self.attendance
+
 
 def load_events(csv_path: Path) -> List[FestivalEvent]:
     rows: List[FestivalEvent] = []
@@ -62,17 +68,23 @@ def summarize(events: Iterable[FestivalEvent]) -> dict:
             "avg_profit": 0.0,
             "total_profit": 0.0,
             "total_attendance": 0,
+            "avg_cost_per_attendee": 0.0,
         }
     total_profit = sum(event.profit for event in events)
     total_attendance = sum(event.attendance for event in events)
+    total_cost = sum(event.cost for event in events)
     avg_profit = total_profit / len(events)
     avg_roi = sum(event.roi for event in events) / len(events)
+    avg_cost_per_attendee = (
+        total_cost / total_attendance if total_attendance else 0.0
+    )
     return {
         "events": len(events),
         "avg_roi": avg_roi,
         "avg_profit": avg_profit,
         "total_profit": total_profit,
         "total_attendance": total_attendance,
+        "avg_cost_per_attendee": avg_cost_per_attendee,
     }
 
 
@@ -84,6 +96,7 @@ def event_as_dict(event: FestivalEvent) -> dict:
         "attendance": event.attendance,
         "roi": event.roi,
         "profit": event.profit,
+        "cost_per_attendee": event.cost_per_attendee,
     }
 
 
@@ -166,6 +179,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     print(f"Avg Profit      : {format_currency(summary['avg_profit'])}")
     print(f"Total Profit    : {format_currency(summary['total_profit'])}")
     print(f"Total Attendance: {summary['total_attendance']:,}")
+    print(f"Avg Cost/Guest  : {format_currency(summary['avg_cost_per_attendee'])}")
     print()
     if args.summary_only or not top_events:
         return
@@ -174,7 +188,8 @@ def main(argv: Optional[List[str]] = None) -> None:
         print(
             f"- {event.name}: ROI {event.roi:.2%}, "
             f"Profit {format_currency(event.profit)}, "
-            f"Attendance {event.attendance:,}"
+            f"Attendance {event.attendance:,}, "
+            f"Cost/Guest {format_currency(event.cost_per_attendee)}"
         )
 
 
