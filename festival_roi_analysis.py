@@ -98,6 +98,12 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         default=3,
         help="Show top N events by ROI (default: 3).",
     )
+    parser.add_argument(
+        "--min-attendance",
+        type=int,
+        default=0,
+        help="Ignore events with attendance below this threshold.",
+    )
     return parser.parse_args(argv)
 
 
@@ -110,6 +116,8 @@ def main(argv: Optional[List[str]] = None) -> None:
     events = sample_events()
     if args.input:
         events = load_events(args.input)
+    if args.min_attendance > 0:
+        events = [event for event in events if event.attendance >= args.min_attendance]
     summary = summarize(events)
     print("Festival ROI Summary")
     print("-------------------")
