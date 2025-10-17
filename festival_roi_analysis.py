@@ -100,9 +100,12 @@ def event_as_dict(event: FestivalEvent) -> dict:
     }
 
 
-def export_report(path: Path, summary: dict, top_events: Iterable[FestivalEvent]) -> None:
+def export_report(
+    path: Path, summary: dict, top_events: Iterable[FestivalEvent], metric: str
+) -> None:
     payload = {
         "summary": summary,
+        "ranking_metric": metric,
         "top_events": [event_as_dict(event) for event in top_events],
     }
     if path.parent and not path.parent.exists():
@@ -149,6 +152,12 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         type=Path,
         help="Export the summary and ranked events to this JSON file.",
     )
+    parser.add_argument(
+        "--rank-by",
+        choices=("roi", "profit", "attendance"),
+        default="roi",
+        help="Metric used to rank the top events (default: roi).",
+    )
     return parser.parse_args(argv)
 
 
@@ -167,11 +176,22 @@ def main(argv: Optional[List[str]] = None) -> None:
     top_count = max(0, min(args.top, len(events)))
     top_events: List[FestivalEvent] = []
     if top_count:
-        top_events = sorted(events, key=lambda event: event.roi, reverse=True)[:top_count]
+        if args.rank_by == "profit":
+            top_events = sorted(events, key=lambda event: event.profit, reverse=True)[
+                :top_count
+            ]
+        elif args.rank_by == "attendance":
+            top_events = sorted(
+                events, key=lambda event: event.attendance, reverse=True
+            )[:top_count]
+        else:
+            top_events = sorted(events, key=lambda event: event.roi, reverse=True)[
+                :top_count
+            ]
     if args.summary_only:
         top_events = []
     if args.export_json:
-        export_report(args.export_json, summary, top_events)
+        export_report(args.export_json, summary, top_events, args.rank_by)
     print("Festival ROI Summary")
     print("-------------------")
     print(f"Events analysed : {summary['events']}")
@@ -183,7 +203,10 @@ def main(argv: Optional[List[str]] = None) -> None:
     print()
     if args.summary_only or not top_events:
         return
-    print(f"Top {len(top_events)} Events by ROI")
+    label = {"roi": "ROI", "profit": "Profit", "attendance": "Attendance"}[
+        args.rank_by
+    ]
+    print(f"Top {len(top_events)} Events by {label}")
     for event in top_events:
         print(
             f"- {event.name}: ROI {event.roi:.2%}, "
