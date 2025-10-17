@@ -100,11 +100,20 @@ def event_as_dict(event: FestivalEvent) -> dict:
     }
 
 
+def metric_value(event: FestivalEvent, metric: str) -> float:
+    if metric == "profit":
+        return event.profit
+    if metric == "attendance":
+        return float(event.attendance)
+    return event.roi
+
+
 def export_report(
     path: Path,
     summary: dict,
     top_events: Iterable[FestivalEvent],
     metric: str,
+    bottom_events: Iterable[FestivalEvent],
     underperformers: Iterable[FestivalEvent],
     roi_target: Optional[float],
 ) -> None:
@@ -112,6 +121,7 @@ def export_report(
         "summary": summary,
         "ranking_metric": metric,
         "top_events": [event_as_dict(event) for event in top_events],
+        "bottom_events": [event_as_dict(event) for event in bottom_events],
         "roi_target": roi_target,
         "underperforming_events": [
             event_as_dict(event) for event in underperformers
@@ -144,6 +154,12 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         type=int,
         default=3,
         help="Show top N events by ROI (default: 3).",
+    )
+    parser.add_argument(
+        "--bottom",
+        type=int,
+        default=0,
+        help="Show bottom N events using the same ranking metric.",
     )
     parser.add_argument(
         "--min-attendance",
@@ -188,22 +204,21 @@ def main(argv: Optional[List[str]] = None) -> None:
         events = [event for event in events if event.attendance >= args.min_attendance]
     summary = summarize(events)
     top_count = max(0, min(args.top, len(events)))
-    top_events: List[FestivalEvent] = []
-    if top_count:
-        if args.rank_by == "profit":
-            top_events = sorted(events, key=lambda event: event.profit, reverse=True)[
-                :top_count
-            ]
-        elif args.rank_by == "attendance":
-            top_events = sorted(
-                events, key=lambda event: event.attendance, reverse=True
-            )[:top_count]
-        else:
-            top_events = sorted(events, key=lambda event: event.roi, reverse=True)[
-                :top_count
-            ]
+    ranked_desc: List[FestivalEvent] = []
+    if events:
+        ranked_desc = sorted(
+            events, key=lambda event: metric_value(event, args.rank_by), reverse=True
+        )
+    top_events: List[FestivalEvent] = ranked_desc[:top_count]
+    bottom_count = max(0, min(args.bottom, len(events)))
+    bottom_events: List[FestivalEvent] = []
+    if bottom_count:
+        bottom_events = sorted(
+            events, key=lambda event: metric_value(event, args.rank_by)
+        )[:bottom_count]
     if args.summary_only:
         top_events = []
+        bottom_events = []
     underperformers: List[FestivalEvent] = []
     if args.roi_target is not None:
         underperformers = [
@@ -215,6 +230,7 @@ def main(argv: Optional[List[str]] = None) -> None:
             summary,
             top_events,
             args.rank_by,
+            bottom_events,
             underperformers,
             args.roi_target,
         )
@@ -238,19 +254,33 @@ def main(argv: Optional[List[str]] = None) -> None:
         else:
             print("- None")
         print()
-    if args.summary_only or not top_events:
-        return
     label = {"roi": "ROI", "profit": "Profit", "attendance": "Attendance"}[
         args.rank_by
     ]
-    print(f"Top {len(top_events)} Events by {label}")
-    for event in top_events:
-        print(
-            f"- {event.name}: ROI {event.roi:.2%}, "
-            f"Profit {format_currency(event.profit)}, "
-            f"Attendance {event.attendance:,}, "
-            f"Cost/Guest {format_currency(event.cost_per_attendee)}"
-        )
+    if top_events:
+        print(f"Top {len(top_events)} Events by {label}")
+        for event in top_events:
+            print(
+                f"- {event.name}: ROI {event.roi:.2%}, "
+                f"Profit {format_currency(event.profit)}, "
+                f"Attendance {event.attendance:,}, "
+                f"Cost/Guest {format_currency(event.cost_per_attendee)}"
+            )
+        print()
+    if bottom_events:
+        print(f"Bottom {len(bottom_events)} Events by {label}")
+        for event in bottom_events:
+            print(
+                f"- {event.name}: ROI {event.roi:.2%}, "
+                f"Profit {format_currency(event.profit)}, "
+                f"Attendance {event.attendance:,}, "
+                f"Cost/Guest {format_currency(event.cost_per_attendee)}"
+            )
+        print()
+    if args.summary_only:
+        return
+    if not top_events and not bottom_events:
+        return
 
 
 if __name__ == "__main__":
