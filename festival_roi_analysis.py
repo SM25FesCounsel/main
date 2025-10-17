@@ -101,12 +101,21 @@ def event_as_dict(event: FestivalEvent) -> dict:
 
 
 def export_report(
-    path: Path, summary: dict, top_events: Iterable[FestivalEvent], metric: str
+    path: Path,
+    summary: dict,
+    top_events: Iterable[FestivalEvent],
+    metric: str,
+    underperformers: Iterable[FestivalEvent],
+    roi_target: Optional[float],
 ) -> None:
     payload = {
         "summary": summary,
         "ranking_metric": metric,
         "top_events": [event_as_dict(event) for event in top_events],
+        "roi_target": roi_target,
+        "underperforming_events": [
+            event_as_dict(event) for event in underperformers
+        ],
     }
     if path.parent and not path.parent.exists():
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -158,6 +167,11 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         default="roi",
         help="Metric used to rank the top events (default: roi).",
     )
+    parser.add_argument(
+        "--roi-target",
+        type=float,
+        help="ROI threshold (0.25 for 25%%) used to flag underperforming events.",
+    )
     return parser.parse_args(argv)
 
 
@@ -190,8 +204,20 @@ def main(argv: Optional[List[str]] = None) -> None:
             ]
     if args.summary_only:
         top_events = []
+    underperformers: List[FestivalEvent] = []
+    if args.roi_target is not None:
+        underperformers = [
+            event for event in events if event.roi < args.roi_target
+        ]
     if args.export_json:
-        export_report(args.export_json, summary, top_events, args.rank_by)
+        export_report(
+            args.export_json,
+            summary,
+            top_events,
+            args.rank_by,
+            underperformers,
+            args.roi_target,
+        )
     print("Festival ROI Summary")
     print("-------------------")
     print(f"Events analysed : {summary['events']}")
@@ -201,6 +227,17 @@ def main(argv: Optional[List[str]] = None) -> None:
     print(f"Total Attendance: {summary['total_attendance']:,}")
     print(f"Avg Cost/Guest  : {format_currency(summary['avg_cost_per_attendee'])}")
     print()
+    if args.roi_target is not None:
+        print(f"Events below ROI target ({args.roi_target:.2%})")
+        if underperformers:
+            for event in underperformers:
+                print(
+                    f"- {event.name}: ROI {event.roi:.2%}, "
+                    f"Profit {format_currency(event.profit)}"
+                )
+        else:
+            print("- None")
+        print()
     if args.summary_only or not top_events:
         return
     label = {"roi": "ROI", "profit": "Profit", "attendance": "Attendance"}[
