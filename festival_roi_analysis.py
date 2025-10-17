@@ -184,6 +184,11 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         help="Metric used to rank the top events (default: roi).",
     )
     parser.add_argument(
+        "--currency",
+        default="$",
+        help="Currency symbol or prefix used when printing monetary values.",
+    )
+    parser.add_argument(
         "--roi-target",
         type=float,
         help="ROI threshold (0.25 for 25%%) used to flag underperforming events.",
@@ -191,12 +196,14 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def format_currency(value: float) -> str:
-    return f"${value:,.2f}"
+def format_currency(value: float, symbol: str) -> str:
+    spacer = "" if len(symbol) == 1 else " "
+    return f"{symbol}{spacer}{value:,.2f}"
 
 
 def main(argv: Optional[List[str]] = None) -> None:
     args = parse_args(argv)
+    currency = args.currency
     events = sample_events()
     if args.input:
         events = load_events(args.input)
@@ -238,10 +245,12 @@ def main(argv: Optional[List[str]] = None) -> None:
     print("-------------------")
     print(f"Events analysed : {summary['events']}")
     print(f"Avg ROI         : {summary['avg_roi']:.2%}")
-    print(f"Avg Profit      : {format_currency(summary['avg_profit'])}")
-    print(f"Total Profit    : {format_currency(summary['total_profit'])}")
+    print(f"Avg Profit      : {format_currency(summary['avg_profit'], currency)}")
+    print(f"Total Profit    : {format_currency(summary['total_profit'], currency)}")
     print(f"Total Attendance: {summary['total_attendance']:,}")
-    print(f"Avg Cost/Guest  : {format_currency(summary['avg_cost_per_attendee'])}")
+    print(
+        f"Avg Cost/Guest  : {format_currency(summary['avg_cost_per_attendee'], currency)}"
+    )
     print()
     if args.roi_target is not None:
         print(f"Events below ROI target ({args.roi_target:.2%})")
@@ -249,7 +258,7 @@ def main(argv: Optional[List[str]] = None) -> None:
             for event in underperformers:
                 print(
                     f"- {event.name}: ROI {event.roi:.2%}, "
-                    f"Profit {format_currency(event.profit)}"
+                    f"Profit {format_currency(event.profit, currency)}"
                 )
         else:
             print("- None")
@@ -262,9 +271,9 @@ def main(argv: Optional[List[str]] = None) -> None:
         for event in top_events:
             print(
                 f"- {event.name}: ROI {event.roi:.2%}, "
-                f"Profit {format_currency(event.profit)}, "
+                f"Profit {format_currency(event.profit, currency)}, "
                 f"Attendance {event.attendance:,}, "
-                f"Cost/Guest {format_currency(event.cost_per_attendee)}"
+                f"Cost/Guest {format_currency(event.cost_per_attendee, currency)}"
             )
         print()
     if bottom_events:
@@ -272,9 +281,9 @@ def main(argv: Optional[List[str]] = None) -> None:
         for event in bottom_events:
             print(
                 f"- {event.name}: ROI {event.roi:.2%}, "
-                f"Profit {format_currency(event.profit)}, "
+                f"Profit {format_currency(event.profit, currency)}, "
                 f"Attendance {event.attendance:,}, "
-                f"Cost/Guest {format_currency(event.cost_per_attendee)}"
+                f"Cost/Guest {format_currency(event.cost_per_attendee, currency)}"
             )
         print()
     if args.summary_only:
