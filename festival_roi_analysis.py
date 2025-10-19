@@ -3,36 +3,12 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 from pathlib import Path
 from typing import Iterable, List, Optional
 
 from festival_roi.models import FestivalEvent
-
-
-def load_events(csv_path: Path) -> List[FestivalEvent]:
-    rows: List[FestivalEvent] = []
-    with csv_path.open(newline="", encoding="utf-8") as handle:
-        reader = csv.DictReader(handle)
-        required = {"name", "cost", "revenue", "attendance"}
-        missing = required - set(reader.fieldnames or [])
-        if missing:
-            pretty = ", ".join(sorted(missing))
-            raise ValueError(f"CSV missing required columns: {pretty}")
-        for raw in reader:
-            try:
-                rows.append(
-                    FestivalEvent(
-                        name=raw["name"],
-                        cost=float(raw["cost"]),
-                        revenue=float(raw["revenue"]),
-                        attendance=int(raw["attendance"]),
-                    )
-                )
-            except (TypeError, ValueError) as exc:
-                raise ValueError(f"Invalid row {raw}") from exc
-    return rows
+from festival_roi.io import load_events
 
 
 def summarize(events: Iterable[FestivalEvent]) -> dict:
