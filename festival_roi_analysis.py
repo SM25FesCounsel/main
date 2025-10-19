@@ -10,14 +10,7 @@ from festival_roi.analysis import summarize
 from festival_roi.models import FestivalEvent
 from festival_roi.io import load_events
 from festival_roi.reporting import export_report
-
-
-def metric_value(event: FestivalEvent, metric: str) -> float:
-    if metric == "profit":
-        return event.profit
-    if metric == "attendance":
-        return float(event.attendance)
-    return event.roi
+from festival_roi.ranking import metric_value
 
 
 def sample_events() -> List[FestivalEvent]:
