@@ -9,6 +9,7 @@ from typing import Iterable, List, Optional
 from festival_roi.analysis import summarize
 from festival_roi.models import FestivalEvent
 from festival_roi.io import load_events
+from festival_roi.formatting import format_currency
 from festival_roi.reporting import export_report
 from festival_roi.ranking import metric_value
 
@@ -80,11 +81,6 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         help="ROI threshold (0.25 for 25%%) used to flag underperforming events.",
     )
     return parser.parse_args(argv)
-
-
-def format_currency(value: float, symbol: str) -> str:
-    spacer = "" if len(symbol) == 1 else " "
-    return f"{symbol}{spacer}{value:,.2f}"
 
 
 def main(argv: Optional[List[str]] = None) -> None:
