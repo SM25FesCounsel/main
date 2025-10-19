@@ -12,16 +12,7 @@ from festival_roi.io import load_events
 from festival_roi.formatting import format_currency
 from festival_roi.reporting import export_report
 from festival_roi.ranking import metric_value
-
-
-def sample_events() -> List[FestivalEvent]:
-    # Sample data helps users validate the workflow without providing their own dataset.
-    return [
-        FestivalEvent("Spring Lights", cost=45000, revenue=86000, attendance=5000),
-        FestivalEvent("Coastal Sounds", cost=78000, revenue=120000, attendance=8500),
-        FestivalEvent("Harvest Gala", cost=30000, revenue=41000, attendance=3600),
-        FestivalEvent("Winter Village", cost=90000, revenue=99000, attendance=9200),
-    ]
+from festival_roi.sample_data import sample_events
 
 
 def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
