@@ -1,0 +1,16 @@
+body {
+  background-color: #f5f7fa;
+}
+
+.alert-stack {
+  margin-bottom: 1rem;
+}
+
+.card {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+}
+
+.metric-value {
+  font-size: 1.75rem;
+  font-weight: 600;
+}
