@@ -6,7 +6,7 @@
       <div class="card metric-card">
         <div class="card-body">
           <h6 class="text-muted text-uppercase mb-2">Events Analysed</h6>
-          <div class="metric-value">{{ metrics.events }}</div>
+          <div class="metric-value">{{ summary.events }}</div>
         </div>
       </div>
     </div>
@@ -14,7 +14,7 @@
       <div class="card metric-card">
         <div class="card-body">
           <h6 class="text-muted text-uppercase mb-2">Average ROI</h6>
-          <div class="metric-value">{{ (metrics.avg_roi * 100) | round(2) }}%</div>
+          <div class="metric-value">{{ (summary.avg_roi * 100) | round(2) }}%</div>
         </div>
       </div>
     </div>
@@ -22,7 +22,7 @@
       <div class="card metric-card">
         <div class="card-body">
           <h6 class="text-muted text-uppercase mb-2">Total Profit</h6>
-          <div class="metric-value">{{ metrics.total_profit | currency }}</div>
+          <div class="metric-value">{{ summary.total_profit | currency(currency) }}</div>
         </div>
       </div>
     </div>
@@ -40,7 +40,7 @@
               <li class="py-2 border-bottom">
                 <strong>{{ event.name }}</strong>
                 <div class="text-muted small">
-                  ROI {{ (event.roi * 100) | round(2) }}%, Profit {{ event.profit | currency }}
+                  ROI {{ (event.roi * 100) | round(2) }}%, Profit {{ event.profit | currency(currency) }}
                 </div>
               </li>
             {% else %}
@@ -61,4 +61,68 @@
       </div>
     </div>
   </div>
+  {% if bottom_events %}
+    <div class="row g-4 mt-1">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header bg-transparent">
+            <h5 class="mb-0">Bottom Events</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-sm align-middle">
+                <thead>
+                  <tr>
+                    <th>Event</th>
+                    <th class="text-end">ROI</th>
+                    <th class="text-end">Profit</th>
+                    <th class="text-end">Attendance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for event in bottom_events %}
+                    <tr>
+                      <td>{{ event.name }}</td>
+                      <td class="text-end">{{ (event.roi * 100) | round(2) }}%</td>
+                      <td class="text-end">{{ event.profit | currency(currency) }}</td>
+                      <td class="text-end">{{ event.attendance | int }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if roi_target is not none %}
+    <div class="row g-4 mt-1">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Underperforming Events</h5>
+            <span class="badge bg-warning text-dark">ROI target {{ (roi_target * 100) | round(0) }}%</span>
+          </div>
+          <div class="card-body">
+            {% if underperformers %}
+              <ul class="list-unstyled mb-0">
+                {% for event in underperformers %}
+                  <li class="py-2 border-bottom">
+                    <strong>{{ event.name }}</strong>
+                    <div class="text-muted small">
+                      ROI {{ (event.roi * 100) | round(2) }}%, Profit {{ event.profit | currency(currency) }}
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-muted mb-0">All events meet the ROI target.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
 {% endblock %}
