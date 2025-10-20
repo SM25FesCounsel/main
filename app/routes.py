@@ -29,4 +29,5 @@ def home() -> str:
         roi_target=analysis["roi_target"],
         underperformers=analysis["underperformers"],
         currency=currency_symbol,
+        chart=analysis["chart"],
     )

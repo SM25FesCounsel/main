@@ -55,8 +55,8 @@
         <div class="card-header bg-transparent">
           <h5 class="mb-0">ROI Trend</h5>
         </div>
-        <div class="card-body d-flex align-items-center justify-content-center">
-          <p class="text-muted mb-0">Interactive charts coming soon.</p>
+        <div class="card-body">
+          <canvas id="roiChart" aria-label="ROI chart" role="img"></canvas>
         </div>
       </div>
     </div>
@@ -125,4 +125,11 @@
       </div>
     </div>
   {% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js" integrity="sha384-pup8NAlWTMwVzKhI6+w4n1vCtbmZh9rqx8pKFkP8+9uOz+H6fQU3jC9RHkoz9qut" crossorigin="anonymous"></script>
+  <script>
+    window.renderRoiChart({{ chart | tojson }});
+  </script>
 {% endblock %}
