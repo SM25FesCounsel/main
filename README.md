@@ -33,8 +33,22 @@ Module highlights:
 - `festival_roi.reporting` serialises reports to JSON.
 - `festival_roi.cli` houses the argument parser and CLI entry point.
 
-## Dashboard (in progress)
+## Dashboard
 
-A Flask-powered ROI visualisation dashboard is being added. Once ready it will live
-under the `app/` package with templates in `templates/` and static assets in `static/`.
-Follow the project commits for step-by-step progress.
+Launch the interactive ROI dashboard built with Flask:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
+pip install -r requirements.txt
+
+export FLASK_APP=app        # On Windows PowerShell: $Env:FLASK_APP = "app"
+flask run
+```
+
+The dashboard lets you:
+
+- Upload event CSV files (columns: `name`, `cost`, `revenue`, `attendance`).
+- Filter results by minimum attendance to focus on larger events.
+- Review ROI/Profit top and bottom performers, underperformers vs target, and charts.
+- Explore the bundled sample dataset when no file is provided.
