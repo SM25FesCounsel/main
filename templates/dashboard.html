@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card metric-card">
+        <div class="card-body">
+          <h6 class="text-muted text-uppercase mb-2">Events Analysed</h6>
+          <div class="metric-value">{{ metrics.events }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card metric-card">
+        <div class="card-body">
+          <h6 class="text-muted text-uppercase mb-2">Average ROI</h6>
+          <div class="metric-value">{{ (metrics.avg_roi * 100) | round(2) }}%</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card metric-card">
+        <div class="card-body">
+          <h6 class="text-muted text-uppercase mb-2">Total Profit</h6>
+          <div class="metric-value">{{ metrics.total_profit | currency }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mt-1">
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header bg-transparent">
+          <h5 class="mb-0">Top Events</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled mb-0">
+            {% for event in top_events %}
+              <li class="py-2 border-bottom">
+                <strong>{{ event.name }}</strong>
+                <div class="text-muted small">
+                  ROI {{ (event.roi * 100) | round(2) }}%, Profit {{ event.profit | currency }}
+                </div>
+              </li>
+            {% else %}
+              <li class="text-muted">No events yet.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header bg-transparent">
+          <h5 class="mb-0">ROI Trend</h5>
+        </div>
+        <div class="card-body d-flex align-items-center justify-content-center">
+          <p class="text-muted mb-0">Interactive charts coming soon.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
