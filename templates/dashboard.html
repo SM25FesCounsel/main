@@ -1,6 +1,32 @@
 {% extends "base.html" %}
 
 {% block content %}
+  <div class="card mb-4">
+    <div class="card-body">
+      <form class="row gy-3 gx-3 align-items-end" method="post" enctype="multipart/form-data">
+        <div class="col-md-4">
+          <label for="dataset" class="form-label">Upload CSV</label>
+          <input class="form-control" type="file" id="dataset" name="dataset" accept=".csv" />
+          <div class="form-text">Current dataset: {{ dataset_label }}</div>
+        </div>
+        <div class="col-md-3">
+          <label for="minAttendance" class="form-label">Minimum Attendance</label>
+          <input
+            class="form-control"
+            type="number"
+            id="minAttendance"
+            name="min_attendance"
+            min="0"
+            value="{{ min_attendance }}"
+          />
+        </div>
+        <div class="col-md-2 d-grid">
+          <button type="submit" class="btn btn-primary">Analyze</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div class="row g-4">
     <div class="col-md-4">
       <div class="card metric-card">
