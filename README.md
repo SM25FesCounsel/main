@@ -32,3 +32,9 @@ Module highlights:
 - `festival_roi.analysis` computes summary metrics.
 - `festival_roi.reporting` serialises reports to JSON.
 - `festival_roi.cli` houses the argument parser and CLI entry point.
+
+## Dashboard (in progress)
+
+A Flask-powered ROI visualisation dashboard is being added. Once ready it will live
+under the `app/` package with templates in `templates/` and static assets in `static/`.
+Follow the project commits for step-by-step progress.
