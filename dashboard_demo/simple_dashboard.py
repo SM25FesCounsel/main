@@ -1,5 +1,7 @@
 """Simple terminal dashboard example script."""
 
+import argparse
+
 SALES_DATA: list[dict[str, object]] = [
     {"month": "Jan", "channel": "Online", "revenue": 42000, "orders": 350},
     {"month": "Jan", "channel": "Retail", "revenue": 38500, "orders": 290},
@@ -118,9 +120,26 @@ def render_channel_breakdown(rows: list[dict[str, object]]) -> str:
     return "\n".join(lines)
 
 
+def parse_args() -> argparse.Namespace:
+    """Parse command-line options."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    available_channels = sorted({str(row["channel"]) for row in SALES_DATA})
+    parser.add_argument(
+        "--channel",
+        choices=available_channels,
+        help="Filter the dashboard to a single sales channel.",
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
     """Entrypoint for the dashboard demo."""
+    args = parse_args()
     rows = load_data()
+
+    if args.channel:
+        rows = [row for row in rows if row["channel"] == args.channel]
+
     kpis = calculate_kpis(rows)
     print(f"Loaded {len(rows)} records for the dashboard demo.")
     print(render_kpi_section(kpis))
