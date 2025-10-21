@@ -70,6 +70,41 @@ def render_kpi_section(kpis: dict[str, object]) -> str:
     )
 
 
+def aggregate_revenue(rows: list[dict[str, object]], key: str) -> list[tuple[str, float]]:
+    """Aggregate revenue totals grouped by the provided column."""
+    totals: dict[str, float] = {}
+    order: list[str] = []
+
+    for row in rows:
+        label = str(row[key])
+        value = float(row["revenue"])
+
+        if label not in totals:
+            totals[label] = 0.0
+            order.append(label)
+
+        totals[label] += value
+
+    return [(label, totals[label]) for label in order]
+
+
+def render_bar_chart(series: list[tuple[str, float]], title: str) -> str:
+    """Render a simple ASCII bar chart from the provided series data."""
+    if not series:
+        return f"{title}\n(no data)"
+
+    max_value = max(value for _, value in series)
+    scale = 40 / max_value if max_value else 1
+
+    lines = [title]
+    for label, value in series:
+        bar_length = max(1, int(value * scale)) if max_value else 0
+        bar = "█" * bar_length
+        lines.append(f"{label:>5} | {bar:<40} {format_currency(value)}")
+
+    return "\n".join(lines)
+
+
 def main() -> None:
     """Entrypoint for the dashboard demo."""
     rows = load_data()
