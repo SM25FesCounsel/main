@@ -46,12 +46,36 @@ def calculate_kpis(rows: list[dict[str, object]]) -> dict[str, object]:
     }
 
 
+def format_currency(value: float) -> str:
+    """Return a USD-style currency string."""
+    return f"${value:,.0f}"
+
+
+def format_number(value: int) -> str:
+    """Return a human-friendly integer string with separators."""
+    return f"{value:,}"
+
+
+def render_kpi_section(kpis: dict[str, object]) -> str:
+    """Build a human-readable representation of the summary metrics."""
+    return "\n".join(
+        [
+            "=== KPI Overview ===",
+            f"Total Revenue        : {format_currency(float(kpis['total_revenue']))}",
+            f"Total Orders         : {format_number(int(kpis['total_orders']))}",
+            f"Average Order Value  : {format_currency(float(kpis['average_order_value']))}",
+            f"Top Channel          : {kpis['top_channel']}",
+            f"Top Month            : {kpis['top_month']}",
+        ]
+    )
+
+
 def main() -> None:
     """Entrypoint for the dashboard demo."""
     rows = load_data()
     kpis = calculate_kpis(rows)
     print(f"Loaded {len(rows)} records for the dashboard demo.")
-    print(f"Total revenue: {kpis['total_revenue']:.2f}")
+    print(render_kpi_section(kpis))
 
 
 if __name__ == "__main__":
