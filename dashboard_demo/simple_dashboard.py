@@ -140,6 +140,15 @@ def main() -> None:
     if args.channel:
         rows = [row for row in rows if row["channel"] == args.channel]
 
+    print("=== Terminal Dashboard Demo ===")
+    if args.channel:
+        print(f"Filter applied: channel = {args.channel}")
+    print()
+
+    if not rows:
+        print("No records match the selected filters.")
+        return
+
     kpis = calculate_kpis(rows)
     print(f"Loaded {len(rows)} records for the dashboard demo.")
     print(render_kpi_section(kpis))
