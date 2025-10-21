@@ -111,6 +111,9 @@ def main() -> None:
     kpis = calculate_kpis(rows)
     print(f"Loaded {len(rows)} records for the dashboard demo.")
     print(render_kpi_section(kpis))
+    print()
+    monthly_revenue = aggregate_revenue(rows, "month")
+    print(render_bar_chart(monthly_revenue, "Revenue by Month"))
 
 
 if __name__ == "__main__":
