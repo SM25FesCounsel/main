@@ -15,10 +15,43 @@ def load_data() -> list[dict[str, object]]:
     return SALES_DATA.copy()
 
 
+def calculate_kpis(rows: list[dict[str, object]]) -> dict[str, object]:
+    """Compute headline metrics from the provided dataset."""
+    revenue_by_channel: dict[str, float] = {}
+    revenue_by_month: dict[str, float] = {}
+    total_revenue = 0.0
+    total_orders = 0
+
+    for row in rows:
+        revenue = float(row["revenue"])
+        orders = int(row["orders"])
+        channel = str(row["channel"])
+        month = str(row["month"])
+
+        total_revenue += revenue
+        total_orders += orders
+        revenue_by_channel[channel] = revenue_by_channel.get(channel, 0.0) + revenue
+        revenue_by_month[month] = revenue_by_month.get(month, 0.0) + revenue
+
+    average_order_value = total_revenue / total_orders if total_orders else 0.0
+    top_channel = max(revenue_by_channel, key=revenue_by_channel.get) if revenue_by_channel else "N/A"
+    top_month = max(revenue_by_month, key=revenue_by_month.get) if revenue_by_month else "N/A"
+
+    return {
+        "total_revenue": total_revenue,
+        "total_orders": total_orders,
+        "average_order_value": average_order_value,
+        "top_channel": top_channel,
+        "top_month": top_month,
+    }
+
+
 def main() -> None:
     """Entrypoint for the dashboard demo."""
     rows = load_data()
+    kpis = calculate_kpis(rows)
     print(f"Loaded {len(rows)} records for the dashboard demo.")
+    print(f"Total revenue: {kpis['total_revenue']:.2f}")
 
 
 if __name__ == "__main__":
