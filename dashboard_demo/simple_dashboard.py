@@ -105,6 +105,19 @@ def render_bar_chart(series: list[tuple[str, float]], title: str) -> str:
     return "\n".join(lines)
 
 
+def render_channel_breakdown(rows: list[dict[str, object]]) -> str:
+    """Render a tabular breakdown of revenue by channel."""
+    series = aggregate_revenue(rows, "channel")
+    total = sum(value for _, value in series)
+
+    lines = ["=== Revenue by Channel ===", "Channel      Revenue     Share"]
+    for label, value in series:
+        share = (value / total) * 100 if total else 0.0
+        lines.append(f"{label:<10} {format_currency(value):>10}   {share:5.1f}%")
+
+    return "\n".join(lines)
+
+
 def main() -> None:
     """Entrypoint for the dashboard demo."""
     rows = load_data()
@@ -114,6 +127,8 @@ def main() -> None:
     print()
     monthly_revenue = aggregate_revenue(rows, "month")
     print(render_bar_chart(monthly_revenue, "Revenue by Month"))
+    print()
+    print(render_channel_breakdown(rows))
 
 
 if __name__ == "__main__":
